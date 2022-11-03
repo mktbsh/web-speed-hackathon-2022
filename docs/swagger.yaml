@@ -1,0 +1,9 @@
+basePath: /
+host: localhost:1323
+info:
+  contact: {}
+  description: CyberTicketサーバのドキュメント
+  title: CyberTicket API
+  version: "1.0"
+paths: {}
+swagger: "2.0"
