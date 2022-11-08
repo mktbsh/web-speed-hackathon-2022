@@ -11,7 +11,6 @@ import { Heading } from "../../components/typographies/Heading";
 import { useAuthorizedFetch } from "../../hooks/useAuthorizedFetch";
 import { useFetch } from "../../hooks/useFetch";
 import { Color, Radius, Space } from "../../styles/variables";
-import { isSameDay } from "../../utils/DateUtils";
 import { authorizedJsonFetcher, jsonFetcher } from "../../utils/HttpUtils";
 
 import { ChargeDialog } from "./internal/ChargeDialog";
@@ -82,24 +81,12 @@ function useTodayRacesWithAnimation(races) {
  * @returns {string | null}
  */
 function useHeroImage(todayRaces) {
-  const firstRaceId = todayRaces[0]?.id;
-  const url =
-    firstRaceId !== undefined
-      ? `/api/hero?firstRaceId=${firstRaceId}`
-      : "/api/hero";
-  const { data } = useFetch(url, jsonFetcher);
-
-  if (firstRaceId === undefined || data === null) {
-    return null;
-  }
-
-  const imageUrl = `${data.url}?${data.hash}`;
-  return imageUrl;
+  return todayRaces[0]?.id ? '/assets/images/hero.jpg' : null;
 }
 
 /** @type {React.VFC} */
 export const Top = () => {
-  const { date = moment().format("YYYY-MM-DD") } = useParams();
+  const { date = moment() } = useParams();
 
   const ChargeButton = styled.button`
     background: ${Color.mono[700]};
@@ -119,7 +106,7 @@ export const Top = () => {
     authorizedJsonFetcher,
   );
 
-  const { data: raceData } = useFetch("/api/races", jsonFetcher);
+  const { data: raceData } = useFetch(`/api/races?since=${date.startOf("day").unix()}&until=${date.endOf("day").unix()}`, jsonFetcher);
 
   const handleClickChargeButton = useCallback(() => {
     if (chargeDialogRef.current === null) {
@@ -133,17 +120,9 @@ export const Top = () => {
     revalidate();
   }, [revalidate]);
 
-  const todayRaces =
-    raceData != null
-      ? [...raceData.races]
-          .sort(
-            (/** @type {Model.Race} */ a, /** @type {Model.Race} */ b) =>
-              moment(a.startAt) - moment(b.startAt),
-          )
-          .filter((/** @type {Model.Race} */ race) =>
-            isSameDay(race.startAt, date),
-          )
-      : [];
+
+  const todayRaces = raceData != null ? raceData.races : [];
+
   const todayRacesToShow = useTodayRacesWithAnimation(todayRaces);
   const heroImageUrl = useHeroImage(todayRaces);
 

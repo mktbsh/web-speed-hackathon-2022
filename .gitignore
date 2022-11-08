@@ -10,3 +10,5 @@ dist
 database.sqlite
 
 tmp
+
+.DS_Store
